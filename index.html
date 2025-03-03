@@ -56,7 +56,7 @@
         }
         var map = L.map('map', {
             zoomControl:false, maxZoom:28, minZoom:1
-        }).fitBounds([[41.908409484889006,12.523821325716426],[41.913430839654374,12.532412387458567]]);
+        }).fitBounds([[41.755702920470505,12.294551066905528],[41.97794998698743,12.674443104631168]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
@@ -139,22 +139,24 @@
                         <td>' + (feature.properties['Stato'] !== null ? autolinker.link(String(feature.properties['Stato']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td colspan="2"><strong>Nome</strong><br />' + (feature.properties['Nome'] !== null ? autolinker.link(String(feature.properties['Nome']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        <th scope="row">Nome</th>\
+                        <td>' + (feature.properties['Nome'] !== null ? autolinker.link(String(feature.properties['Nome']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td colspan="2"><strong>Tipologia</strong><br />' + (feature.properties['Tipologia'] !== null ? autolinker.link(String(feature.properties['Tipologia']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        <th scope="row">Tipologia</th>\
+                        <td class="visible-with-data" id="Tipologia">' + (feature.properties['Tipologia'] !== null ? autolinker.link(String(feature.properties['Tipologia']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td colspan="2">' + (feature.properties['Lunghezza'] !== null ? autolinker.link(String(feature.properties['Lunghezza']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        <th scope="row">Lunghezza</th>\
+                        <td>' + (feature.properties['Lunghezza'] !== null ? autolinker.link(String(feature.properties['Lunghezza']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td colspan="2">' + (feature.properties['Lunghe_eff'] !== null ? autolinker.link(String(feature.properties['Lunghe_eff']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        <th scope="row">Comune</th>\
+                        <td>' + (feature.properties['Comune'] !== null ? autolinker.link(String(feature.properties['Comune']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td colspan="2">' + (feature.properties['Comune'] !== null ? autolinker.link(String(feature.properties['Comune']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['Segnala'] !== null ? autolinker.link(String(feature.properties['Segnala']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        <th scope="row">Segnala</th>\
+                        <td>' + (feature.properties['Segnala'] !== null ? autolinker.link(String(feature.properties['Segnala']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
             var content = removeEmptyRowsFromPopupContent(popupContent, feature);
