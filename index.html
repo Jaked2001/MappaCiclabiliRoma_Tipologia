@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/Ciclabili_Manuale_1.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[41.908409484889006,12.523821325716426],[41.913430839654374,12.532412387458567]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_ESRITopo_0');
+        map.getPane('pane_ESRITopo_0').style.zIndex = 400;
+        var layer_ESRITopo_0 = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+            pane: 'pane_ESRITopo_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_ESRITopo_0;
+        map.addLayer(layer_ESRITopo_0);
+        function pop_Ciclabili_Manuale_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">ID_PUMS</th>\
+                        <td>' + (feature.properties['ID_PUMS'] !== null ? autolinker.link(String(feature.properties['ID_PUMS']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Stato</th>\
+                        <td>' + (feature.properties['Stato'] !== null ? autolinker.link(String(feature.properties['Stato']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Nome</strong><br />' + (feature.properties['Nome'] !== null ? autolinker.link(String(feature.properties['Nome']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Tipologia</strong><br />' + (feature.properties['Tipologia'] !== null ? autolinker.link(String(feature.properties['Tipologia']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Lunghezza'] !== null ? autolinker.link(String(feature.properties['Lunghezza']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Lunghe_eff'] !== null ? autolinker.link(String(feature.properties['Lunghe_eff']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Comune'] !== null ? autolinker.link(String(feature.properties['Comune']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Segnala'] !== null ? autolinker.link(String(feature.properties['Segnala']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+        function style_Ciclabili_Manuale_1_0(feature) {
+            var context = {
+                feature: feature,
+                variables: {}
+            };
+            // Start of if blocks and style check logic
+            if (exp_Ciclabili_Manuale_1rule0_eval_expression(context)) {
+                  return {
+                pane: 'pane_Ciclabili_Manuale_1',
+                opacity: 1,
+                color: 'rgba(72,123,182,0.9019607843137255)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            };
+                }
+                else if (exp_Ciclabili_Manuale_1rule1_eval_expression(context)) {
+                  return {
+                pane: 'pane_Ciclabili_Manuale_1',
+                opacity: 1,
+                color: 'rgba(72,123,182,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            };
+                }
+                else if (exp_Ciclabili_Manuale_1rule2_eval_expression(context)) {
+                  return {
+                pane: 'pane_Ciclabili_Manuale_1',
+                opacity: 1,
+                color: 'rgba(166,206,227,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            };
+                }
+                else if (exp_Ciclabili_Manuale_1rule3_eval_expression(context)) {
+                  return {
+                pane: 'pane_Ciclabili_Manuale_1',
+                opacity: 1,
+                color: 'rgba(166,206,227,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            };
+                }
+                else if (exp_Ciclabili_Manuale_1rule4_eval_expression(context)) {
+                  return {
+                pane: 'pane_Ciclabili_Manuale_1',
+                opacity: 1,
+                color: 'rgba(31,120,180,1.0)',
+                dashArray: '1.0,2.0',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            };
+                }
+                else if (exp_Ciclabili_Manuale_1rule5_eval_expression(context)) {
+                  return {
+                pane: 'pane_Ciclabili_Manuale_1',
+                opacity: 1,
+                color: 'rgba(227,26,28,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            };
+                }
+                else if (exp_Ciclabili_Manuale_1rule6_eval_expression(context)) {
+                  return {
+                pane: 'pane_Ciclabili_Manuale_1',
+                opacity: 1,
+                color: 'rgba(178,223,138,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            };
+                }
+                else if (exp_Ciclabili_Manuale_1rule7_eval_expression(context)) {
+                  return {
+                pane: 'pane_Ciclabili_Manuale_1',
+                opacity: 1,
+                color: 'rgba(253,191,111,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            };
+                }
+                else if (exp_Ciclabili_Manuale_1rule8_eval_expression(context)) {
+                  return {
+                pane: 'pane_Ciclabili_Manuale_1',
+                opacity: 1,
+                color: 'rgba(253,191,111,1.0)',
+                dashArray: '8.0,4.0',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            };
+                }
+            else {
+                return {
+                pane: 'pane_Ciclabili_Manuale_1',
+                opacity: 1,
+                color: 'rgba(253,191,111,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            };
+            }
+        }
+        map.createPane('pane_Ciclabili_Manuale_1');
+        map.getPane('pane_Ciclabili_Manuale_1').style.zIndex = 401;
+        map.getPane('pane_Ciclabili_Manuale_1').style['mix-blend-mode'] = 'normal';
+        var layer_Ciclabili_Manuale_1 = new L.geoJson(json_Ciclabili_Manuale_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Ciclabili_Manuale_1',
+            layerName: 'layer_Ciclabili_Manuale_1',
+            pane: 'pane_Ciclabili_Manuale_1',
+            onEachFeature: pop_Ciclabili_Manuale_1,
+            style: style_Ciclabili_Manuale_1_0,
+        });
+        bounds_group.addLayer(layer_Ciclabili_Manuale_1);
+        map.addLayer(layer_Ciclabili_Manuale_1);
+        var overlaysTree = [
+            {label: 'Ciclabili_Manuale<br /><table><tr><td style="text-align: center;"><img src="legend/Ciclabili_Manuale_1_ProtettaBi0.png" /></td><td>Protetta - Bi</td></tr><tr><td style="text-align: center;"><img src="legend/Ciclabili_Manuale_1_ProtettaMono1.png" /></td><td>Protetta - Mono</td></tr><tr><td style="text-align: center;"><img src="legend/Ciclabili_Manuale_1_CiclopedonaleBi2.png" /></td><td>Ciclopedonale - Bi</td></tr><tr><td style="text-align: center;"><img src="legend/Ciclabili_Manuale_1_CiclopedonaleMono3.png" /></td><td>Ciclopedonale - Mono</td></tr><tr><td style="text-align: center;"><img src="legend/Ciclabili_Manuale_1_CorsiaMono4.png" /></td><td>Corsia - Mono</td></tr><tr><td style="text-align: center;"><img src="legend/Ciclabili_Manuale_1_Fantasma5.png" /></td><td>Fantasma</td></tr><tr><td style="text-align: center;"><img src="legend/Ciclabili_Manuale_1_Sentiero6.png" /></td><td>Sentiero</td></tr><tr><td style="text-align: center;"><img src="legend/Ciclabili_Manuale_1_ScenariodiRiferimentoPUMSRoma7.png" /></td><td>Scenario di Riferimento (PUMS Roma)</td></tr><tr><td style="text-align: center;"><img src="legend/Ciclabili_Manuale_1_ScenariodiRiferimentoPUMSRoma8.png" /></td><td>Scenario di Riferimento (PUMS Roma)</td></tr><tr><td style="text-align: center;"><img src="legend/Ciclabili_Manuale_1_9.png" /></td><td></td></tr></table>', layer: layer_Ciclabili_Manuale_1},
+            {label: "ESRI Topo", layer: layer_ESRITopo_0, radioGroup: 'bm' },]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        </script>
+    </body>
+</html>
